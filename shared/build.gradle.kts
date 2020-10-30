@@ -65,12 +65,20 @@ kotlin {
                 implementation("com.squareup.sqldelight:native-driver:$sqlDelightVersion")
             }
         }
+
         val iosTest by getting
 
         commonMain {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
+        }
+
+        val onPhone = System.getenv("SDK_NAME")?.startsWith("iphoneos") ?: false
+        if (onPhone) {
+            iosArm64("ios")
+        } else {
+            iosX64("ios")
         }
     }
 }
@@ -89,6 +97,13 @@ android {
         }
     }
 }
+
+sqldelight {
+    database("AppDatabase") {
+        packageName = "com.example.multiplatformapplication.shared.cache"
+    }
+}
+
 val packForXcode by tasks.creating(Sync::class) {
     group = "build"
     val mode = System.getenv("CONFIGURATION") ?: "DEBUG"
@@ -102,9 +117,3 @@ val packForXcode by tasks.creating(Sync::class) {
     into(targetDir)
 }
 tasks.getByName("build").dependsOn(packForXcode)
-
-sqldelight {
-    database("AppDatabase") {
-        packageName = "com.example.multiplatformapplication.shared.cache"
-    }
-}
